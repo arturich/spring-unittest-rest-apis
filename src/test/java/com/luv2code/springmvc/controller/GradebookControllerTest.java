@@ -1,10 +1,18 @@
 package com.luv2code.springmvc.controller;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Optional;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import org.assertj.core.error.ShouldHaveSameSizeAs;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,8 +40,6 @@ import com.luv2code.springmvc.repository.MathGradesDao;
 import com.luv2code.springmvc.repository.ScienceGradesDao;
 import com.luv2code.springmvc.repository.StudentDao;
 import com.luv2code.springmvc.service.StudentAndGradeService;
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @TestPropertySource("/application-test.properties")
 @AutoConfigureMockMvc
@@ -127,7 +133,7 @@ class GradebookControllerTest {
     }
     
     @Test
-    @DisplayName("Create Students Http Request")
+    @DisplayName("Get Students Http Request")
     public void getStudentsHtppRequest() throws Exception
     {
     	student.setEmailAddress("mail@mail.com");
@@ -159,6 +165,27 @@ class GradebookControllerTest {
     	
     	CollegeStudent verifyStudent = studentDao.findByEmailAddress("mail@mail.com");
     	assertNotNull(verifyStudent,"Student should exist on DB");
+    	
+    }
+    
+    @Test
+    @DisplayName("Delete Student Rest")
+    public void deleteStudentHttpRequest() throws Exception
+    {
+    	//Check if the student is in the DB
+    	
+    	Optional<CollegeStudent> verifyStudent = studentDao.findById(1);
+    	
+    	assertTrue(verifyStudent.isPresent(),"Student should exist before delete");
+    	
+    	mockMvc.perform(MockMvcRequestBuilders.delete("/student/{id}",1))
+    	.andExpect(status().isOk())
+    	.andExpect(content().contentType(APPLICATION_JSON_UTF8))
+    	.andExpect(jsonPath("$",hasSize(0)));
+    	
+    	verifyStudent = studentDao.findById(1);
+    	
+    	assertFalse(verifyStudent.isPresent());
     	
     }
     
