@@ -1,6 +1,6 @@
 package com.luv2code.springmvc.controller;
 
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -187,6 +187,21 @@ class GradebookControllerTest {
     	
     	assertFalse(verifyStudent.isPresent());
     	
+    }
+    
+    @Test
+    @DisplayName("Delete a non-existing student")
+    public void tryToDeleteANonExistingStudent() throws Exception
+    {
+    	//student should not exist
+    	assertFalse(studentDao.findById(0).isPresent(),"Student should NOT exist");
+    	
+    	mockMvc.perform(MockMvcRequestBuilders.delete("/student/{id}",0))
+    		.andExpect(status().is4xxClientError())
+    		.andExpect(content().contentType(APPLICATION_JSON_UTF8))
+    		.andExpect(jsonPath("$.status",is(404)))
+    		.andExpect(jsonPath("$.message",is("Student or Grade was not found")))
+    		;
     }
     
 
