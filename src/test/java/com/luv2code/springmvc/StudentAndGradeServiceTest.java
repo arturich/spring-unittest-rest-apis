@@ -224,8 +224,8 @@ public class StudentAndGradeServiceTest {
         assertTrue(gradebookTest.getStudents().get(0).getStudentGrades().getScienceGradeResults() != null);
         assertTrue(gradebookTest.getStudents().get(0).getStudentGrades().getMathGradeResults() != null);
     }
-
-
+    
+    
     @AfterEach
     public void setupAfterTransaction() {
         jdbc.execute(sqlDeleteStudent);
