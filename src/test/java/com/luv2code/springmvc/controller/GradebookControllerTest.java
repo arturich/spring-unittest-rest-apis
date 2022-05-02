@@ -247,19 +247,11 @@ class GradebookControllerTest {
     	//Check that student exist
     	assertTrue(verifyStudent.isPresent(),"Student should exist");
     	
-//    	CollegeStudent verifiedStudent = verifyStudent.get();
-//    	
-//    	//Check how many grades it has
-//    	verifiedStudent.studentInformation().
-    	
-    	
-    	
     	mockMvc.perform(MockMvcRequestBuilders.post("/grades")
     			.contentType(APPLICATION_JSON_UTF8)
     			.param("grade", "100")
     			.param("gradeType","math" )
-    			.param("studentId", "1")
-    			
+    			.param("studentId", "1")    			
     			)
     		.andExpect(status().isOk())
     		.andExpect(content().contentType(APPLICATION_JSON_UTF8))
@@ -270,6 +262,45 @@ class GradebookControllerTest {
     		.andExpect(jsonPath("$.studentGrades.mathGradeResults",hasSize(2)));
     	
     	//check that the grade was added
+    }
+    
+    @Test
+    @DisplayName("Create grade for student that does not exist")
+    public void createGradeForInvalidStudent() throws Exception
+    {
+    	assertFalse(studentDao.findById(0).isPresent(),"Student must not exist");
+    	
+    	mockMvc.perform(MockMvcRequestBuilders.post("/grades")
+    			.contentType(APPLICATION_JSON_UTF8)
+    			.param("grade", "80.56")
+    			.param("gradeType", "math")
+    			.param("studentId", "0")    			
+    			)
+    				.andExpect(status().is4xxClientError())
+    				.andExpect(content().contentType(APPLICATION_JSON_UTF8))
+    				.andExpect(jsonPath("$.status",is(404)))
+    				.andExpect(jsonPath("$.message",is("Student or Grade was not found")));
+    			
+    	
+    }
+    
+    @Test
+    @DisplayName("Create a grade for a invalid subject")
+    public void createGradeOnInvalidSubject() throws Exception
+    {
+    	
+    	mockMvc.perform(MockMvcRequestBuilders.post("/grades")
+    			.contentType(APPLICATION_JSON_UTF8)
+    			.param("grade", "85.5")
+    			.param("gradeType", "literature")
+    			.param("studentId","1")    			
+    			)
+    				.andExpect(status().is4xxClientError())
+    				.andExpect(content().contentType(APPLICATION_JSON_UTF8))
+    				.andExpect(jsonPath("$.status",is(404)))
+    				.andExpect(jsonPath("$.message", is("Student or Grade was not found")));
+    				
+    	
     }
     
     
