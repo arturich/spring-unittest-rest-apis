@@ -30,6 +30,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MockMvcBuilder;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -203,6 +205,73 @@ class GradebookControllerTest {
     		.andExpect(jsonPath("$.message",is("Student or Grade was not found")))
     		;
     }
+    
+    @Test
+    @DisplayName("Get Student Information")
+    public void getStudentInformation() throws Exception
+    {
+    	// Student must exist before trying to retrieve information
+    	assertTrue(studentDao.findById(1).isPresent(),"Student should exist before trying to get his info");
+    	
+    	mockMvc.perform(MockMvcRequestBuilders.get("/studentInformation/{id}",1))
+    			.andExpect(status().isOk())
+    			.andExpect(content().contentType(APPLICATION_JSON_UTF8))  
+    			.andExpect(jsonPath("$.id",is(1)))
+    			.andExpect(jsonPath("$.firstname",is("Eric")))
+    			.andExpect(jsonPath("$.lastname",is("Roby")))
+    			.andExpect(jsonPath("$.emailAddress",is("eric.roby@luv2code_school.com")));
+    			
+    	
+    }
+    
+    @Test
+    @DisplayName("Try to retrieve student info o invalid student")
+    public void tryToGetStudentInfoOnInvalidStudent() throws Exception
+    {
+    	assertFalse(studentDao.findById(0).isPresent(),"Student should not exist");
+    	
+    	mockMvc.perform(MockMvcRequestBuilders.get("/studentInformation/{id}",0))
+    	.andExpect(status().is4xxClientError())
+    	.andExpect(content().contentType(APPLICATION_JSON_UTF8))
+    	.andExpect(jsonPath("$.status",is(404)))
+		.andExpect(jsonPath("$.message",is("Student or Grade was not found")));    
+    	
+    }
+    
+    @Test
+    @DisplayName("Create student grade")
+    public void createStudentGrade() throws Exception
+    {
+    	Optional<CollegeStudent> verifyStudent = studentDao.findById(1);
+    	
+    	//Check that student exist
+    	assertTrue(verifyStudent.isPresent(),"Student should exist");
+    	
+//    	CollegeStudent verifiedStudent = verifyStudent.get();
+//    	
+//    	//Check how many grades it has
+//    	verifiedStudent.studentInformation().
+    	
+    	
+    	
+    	mockMvc.perform(MockMvcRequestBuilders.post("/grades")
+    			.contentType(APPLICATION_JSON_UTF8)
+    			.param("grade", "100")
+    			.param("gradeType","math" )
+    			.param("studentId", "1")
+    			
+    			)
+    		.andExpect(status().isOk())
+    		.andExpect(content().contentType(APPLICATION_JSON_UTF8))
+    		.andExpect(jsonPath("$.id",is(1)))
+    		.andExpect(jsonPath("$.firstname",is("Eric")))
+    		.andExpect(jsonPath("$.lastname",is("Roby")))
+    		.andExpect(jsonPath("$.emailAddress",is("eric.roby@luv2code_school.com")))
+    		.andExpect(jsonPath("$.studentGrades.mathGradeResults",hasSize(2)));
+    	
+    	//check that the grade was added
+    }
+    
     
 
     
