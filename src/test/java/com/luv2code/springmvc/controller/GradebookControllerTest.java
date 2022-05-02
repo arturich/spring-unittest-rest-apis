@@ -303,6 +303,42 @@ class GradebookControllerTest {
     	
     }
     
+    @Test
+    @DisplayName("Delete a grade")
+    public void deleteAGrade() throws Exception
+    {
+    	//check that the grade exist
+    	assertTrue(mathGradeDao.existsById(1),"Check that the grade exist");
+    	
+    	mockMvc.perform(MockMvcRequestBuilders.delete("/grades/{id}/{gradeType}",1,"math"))
+    	.andExpect(status().isOk())
+    	.andExpect(jsonPath("$.id",is(1)))
+    	.andExpect(jsonPath("$.firstname",is("Eric")))
+    	.andExpect(jsonPath("$.lastname",is("Roby")))
+    	.andExpect(jsonPath("$.emailAddress",is("eric.roby@luv2code_school.com")))
+    	.andExpect(jsonPath("$.studentGrades.mathGradeResults",hasSize(0)));
+    	
+    	
+    	//check that the grade does NOT exist
+    	assertFalse(mathGradeDao.existsById(1),"Check that the grade does NOT exist");
+    }
+    
+    @Test
+    @DisplayName("Delete a grade on invalid grade id")
+    public void deleteAgradeOnInvalidGradeId() throws Exception
+    {
+    	//Check that grade id does not exist
+    	assertFalse(mathGradeDao.existsById(0),"The id must not exist");    	
+    	
+    	mockMvc.perform(MockMvcRequestBuilders.delete("/grades/{id}/{gradeType}",0,"math"))
+    		.andExpect(status().is4xxClientError())
+    		.andExpect(content().contentType(APPLICATION_JSON_UTF8))
+    		.andExpect(jsonPath("$.status",is(404)))
+    		.andExpect(jsonPath("$.message", is("Student or Grade was not found")));
+    	
+
+    }
+    
     
 
     
